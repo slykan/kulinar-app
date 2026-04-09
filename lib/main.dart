@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/landing/landing_screen.dart';
@@ -59,8 +60,10 @@ class KulinarApp extends ConsumerWidget {
       title: 'Kulinar.app',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
+      builder: (context, child) => SelectionArea(child: child!),
       theme: ThemeData(
         brightness: Brightness.dark,
+        fontFamily: GoogleFonts.inter().fontFamily,
         colorScheme: const ColorScheme.dark(
           primary: kOrange,
           secondary: kOrangeLight,

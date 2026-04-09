@@ -1,13 +1,15 @@
 {
-    "name": "kulinar_app",
-    "short_name": "kulinar_app",
-    "start_url": ".",
+    "name": "Kulinar.app",
+    "short_name": "Kulinar",
+    "start_url": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#181818",
+    "theme_color": "#E85D04",
+    "description": "Tvoja kuhinja u džepu. Recepti, kalkulatori za kobasice, tripice i turšiju.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "lang": "hr",
+    "categories": ["food", "lifestyle"],
     "icons": [
         {
             "src": "icons/Icon-192.png",
