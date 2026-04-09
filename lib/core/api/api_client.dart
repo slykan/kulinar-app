@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../storage/auth_storage.dart';
 
 class ApiClient {
   static const String baseUrl = 'https://kulinar.app/api';
@@ -17,7 +19,8 @@ class ApiClient {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'auth_token');
+        final authStorage = AuthStorage(_storage);
+        final token = await authStorage.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
