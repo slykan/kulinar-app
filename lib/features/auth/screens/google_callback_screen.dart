@@ -1,9 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../../../core/storage/auth_storage.dart';
-import '../../../core/api/auth_service.dart';
+import '../../../core/api/api_client.dart';
 
 class GoogleCallbackScreen extends ConsumerStatefulWidget {
   final String? token;
@@ -31,14 +32,24 @@ class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
     final storage = ref.read(authStorageProvider);
     await storage.saveToken(token);
 
-    // Dohvati user podatke
+    // Dohvati user podatke — direktno s tokenom u headeru (ne kroz interceptor)
     try {
-      final authService = ref.read(authServiceProvider);
-      final user = await authService.me();
+      final client = ref.read(apiClientProvider);
+      final response = await client.dio.get(
+        '/me',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      final user = response.data as Map<String, dynamic>;
       ref.read(authProvider.notifier).updateUser(user);
       if (mounted) context.go('/');
     } catch (e) {
-      if (mounted) context.go('/login');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google login error: $e'), backgroundColor: Colors.red, duration: const Duration(seconds: 10)),
+        );
+        await Future.delayed(const Duration(seconds: 10));
+        context.go('/login');
+      }
     }
   }
 
