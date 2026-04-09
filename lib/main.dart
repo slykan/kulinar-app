@@ -14,6 +14,7 @@ import 'features/calculators/screens/calculators_screen.dart';
 import 'features/calculators/screens/kobasice_calculator_screen.dart';
 import 'features/calculators/screens/tripice_calculator_screen.dart';
 import 'features/calculators/screens/tursija_calculator_screen.dart';
+import 'features/profile/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +49,7 @@ final _router = GoRouter(
     GoRoute(path: '/kalkulatori/kobasice', builder: (_, __) => const KobasiceCalculatorScreen()),
     GoRoute(path: '/kalkulatori/tripice', builder: (_, __) => const TripiceCalculatorScreen()),
     GoRoute(path: '/kalkulatori/tursija', builder: (_, __) => const TursijaCalculatorScreen()),
+    GoRoute(path: '/profil', builder: (_, __) => const ProfileScreen()),
   ],
 );
 
@@ -64,6 +66,14 @@ class KulinarApp extends ConsumerWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         fontFamily: GoogleFonts.inter().fontFamily,
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+          bodyLarge: GoogleFonts.inter(color: Colors.white),
+          bodyMedium: GoogleFonts.inter(color: Colors.white70),
+          bodySmall: GoogleFonts.inter(color: Colors.white54),
+          titleLarge: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+          titleMedium: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
+          headlineMedium: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         colorScheme: const ColorScheme.dark(
           primary: kOrange,
           secondary: kOrangeLight,
@@ -136,14 +146,6 @@ class KulinarApp extends ConsumerWidget {
         ),
         dividerTheme: const DividerThemeData(color: Colors.white12),
         iconTheme: const IconThemeData(color: kOrange),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
-          bodySmall: TextStyle(color: Colors.white54),
-          titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          titleMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
       ),
     );
   }

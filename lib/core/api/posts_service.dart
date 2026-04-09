@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'api_client.dart';
 
 class PostsService {
@@ -21,17 +21,21 @@ class PostsService {
     required String title,
     required String content,
     String? excerpt,
-    File? image,
+    XFile? image,
   }) async {
-    final formData = FormData.fromMap({
+    final data = <String, dynamic>{
       'title': title,
       'content': content,
       if (excerpt != null) 'excerpt': excerpt,
-      if (image != null)
-        'image': await MultipartFile.fromFile(image.path, filename: image.path.split('/').last),
-    });
+    };
 
-    final response = await _client.dio.post('/posts', data: formData);
+    if (image != null) {
+      final bytes = await image.readAsBytes();
+      final filename = image.name.isNotEmpty ? image.name : 'image.jpg';
+      data['image'] = MultipartFile.fromBytes(bytes, filename: filename);
+    }
+
+    final response = await _client.dio.post('/posts', data: FormData.fromMap(data));
     return response.data as Map<String, dynamic>;
   }
 
@@ -40,18 +44,22 @@ class PostsService {
     String? title,
     String? content,
     String? excerpt,
-    File? image,
+    XFile? image,
   }) async {
-    final formData = FormData.fromMap({
+    final data = <String, dynamic>{
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (excerpt != null) 'excerpt': excerpt,
-      if (image != null)
-        'image': await MultipartFile.fromFile(image.path, filename: image.path.split('/').last),
       '_method': 'PUT',
-    });
+    };
 
-    final response = await _client.dio.post('/posts/$id', data: formData);
+    if (image != null) {
+      final bytes = await image.readAsBytes();
+      final filename = image.name.isNotEmpty ? image.name : 'image.jpg';
+      data['image'] = MultipartFile.fromBytes(bytes, filename: filename);
+    }
+
+    final response = await _client.dio.post('/posts/$id', data: FormData.fromMap(data));
     return response.data as Map<String, dynamic>;
   }
 
