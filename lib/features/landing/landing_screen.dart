@@ -41,26 +41,24 @@ class _Navbar extends StatelessWidget {
       child: Row(
         children: [
           kIsWeb
-              ? Image.network('/logo.png', height: 36, errorBuilder: (_, __, ___) => const Icon(Icons.restaurant, color: kOrange, size: 36))
-              : Image.asset('assets/images/logo.png', height: 36, errorBuilder: (_, __, ___) => const Icon(Icons.restaurant, color: kOrange, size: 36)),
-          const SizedBox(width: 12),
-          const Text('KULINAR', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              ? Image.network('/logo.png', height: 56, errorBuilder: (_, __, ___) => const Icon(Icons.restaurant, color: kOrange, size: 56))
+              : Image.asset('assets/images/logo.png', height: 56, errorBuilder: (_, __, ___) => const Icon(Icons.restaurant, color: kOrange, size: 56)),
           const Spacer(),
           if (MediaQuery.of(context).size.width > 700) ...[
             _NavLink(label: 'Recepti', onTap: () => context.go('/')),
             _NavLink(label: 'Kalkulator', onTap: () => context.go('/kalkulatori')),
-            _NavLink(label: 'Prijava', onTap: () => context.go('/login')),
+            _NavLink(label: 'Registracija', onTap: () => context.go('/register')),
             const SizedBox(width: 16),
           ],
           ElevatedButton(
-            onPressed: () => context.go('/register'),
+            onPressed: () => context.go('/login'),
             style: ElevatedButton.styleFrom(
               backgroundColor: kOrange,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Registriraj se', style: TextStyle(fontWeight: FontWeight.w600)),
+            child: const Text('Prijava', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ],
       ),

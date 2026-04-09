@@ -53,11 +53,22 @@ final _router = GoRouter(
   ],
 );
 
-class KulinarApp extends ConsumerWidget {
+class KulinarApp extends ConsumerStatefulWidget {
   const KulinarApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<KulinarApp> createState() => _KulinarAppState();
+}
+
+class _KulinarAppState extends ConsumerState<KulinarApp> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(authProvider.notifier).init());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Kulinar.app',
       debugShowCheckedModeBanner: false,
