@@ -25,7 +25,7 @@ class PostDetailScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Greška: $e')),
         data: (post) {
           final imageUrl = post['image'] != null
-              ? 'http://kulinar.test/storage/${post['image']}'
+              ? 'https://kulinar.app/storage/${post['image']}'
               : null;
 
           return SingleChildScrollView(

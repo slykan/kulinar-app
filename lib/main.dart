@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/landing/landing_screen.dart';
+import 'features/splash/splash_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/posts/screens/home_screen.dart';
 import 'features/posts/screens/post_detail_screen.dart';
@@ -24,7 +26,10 @@ const kOrange = Color(0xFFE85D04);
 const kOrangeLight = Color(0xFFFF7B2C);
 
 final _router = GoRouter(
+  initialLocation: '/splash',
   routes: [
+    GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
+    GoRoute(path: '/landing', builder: (_, __) => const LandingScreen()),
     ShellRoute(
       builder: (context, state, child) => _Shell(child: child),
       routes: [

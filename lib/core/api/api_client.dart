@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
-  static const String baseUrl = 'http://kulinar.test/api';
+  static const String baseUrl = 'https://kulinar.app/api';
 
   late final Dio _dio;
   final FlutterSecureStorage _storage;

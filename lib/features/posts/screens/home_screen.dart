@@ -213,7 +213,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: _QuickButton(
                             icon: Icons.settings_outlined,
                             label: 'Postavke',
-                            onTap: () {},
+                            onTap: () => context.push(authState.isLoggedIn ? '/postavke' : '/login'),
                           ),
                         ),
                       ],
@@ -423,7 +423,7 @@ class _PostListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = post['image'] != null
-        ? 'http://kulinar.test/storage/${post['image']}'
+        ? 'https://kulinar.app/storage/${post['image']}'
         : null;
 
     return GestureDetector(
