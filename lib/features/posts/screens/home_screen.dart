@@ -6,6 +6,14 @@ import 'package:go_router/go_router.dart';
 import '../providers/posts_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 
+final myPostsCountProvider = FutureProvider<int>((ref) async {
+  final isLoggedIn = ref.watch(authProvider).isLoggedIn;
+  if (!isLoggedIn) return 0;
+  final service = ref.read(postsServiceProvider);
+  final result = await service.myPosts(page: 1);
+  return result['total'] as int? ?? 0;
+});
+
 const kOrange = Color(0xFFE85D04);
 const kBg = Color(0xFF181818);
 const kSurface = Color(0xFF242424);
@@ -44,6 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final postsState = ref.watch(postsProvider);
     final authState = ref.watch(authProvider);
+    final myPostsCount = ref.watch(myPostsCountProvider);
     final userName = authState.user?['name']?.split(' ').first ?? 'Majstore';
 
     return Scaffold(
@@ -165,8 +174,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Expanded(
                           child: _StatCard(
                             icon: Icons.restaurant_menu,
-                            value: '${postsState.posts.length}',
-                            label: 'Aktivni recepti',
+                            value: myPostsCount.when(data: (c) => '$c', loading: () => '...', error: (_, __) => '0'),
+                            label: 'Moji recepti',
                           ),
                         ),
                         const SizedBox(width: 12),

@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../auth/providers/auth_provider.dart';
 import '../../core/api/api_client.dart';
 
@@ -39,6 +41,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _passwordController.dispose();
     _passwordConfirmController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAvatar() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final filename = picked.name.isNotEmpty ? picked.name : 'avatar.jpg';
+      final client = ref.read(apiClientProvider);
+      final response = await client.dio.put(
+        '/me',
+        data: FormData.fromMap({
+          'avatar': MultipartFile.fromBytes(bytes, filename: filename),
+        }),
+      );
+      ref.read(authProvider.notifier).updateUser(response.data as Map<String, dynamic>);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Avatar ažuriran!'), backgroundColor: kOrange),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Greška: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _save() async {
@@ -162,18 +197,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 48,
-                      backgroundColor: kOrange.withOpacity(0.2),
-                      backgroundImage: user['avatar'] != null ? NetworkImage(user['avatar']) : null,
-                      child: user['avatar'] == null
-                          ? Text(
-                              (user['name'] as String? ?? 'K')[0].toUpperCase(),
-                              style: const TextStyle(fontSize: 36, color: kOrange, fontWeight: FontWeight.bold),
-                            )
-                          : null,
+                    GestureDetector(
+                      onTap: _pickAvatar,
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 52,
+                            backgroundColor: kOrange.withOpacity(0.2),
+                            backgroundImage: user['avatar'] != null ? NetworkImage(user['avatar']) : null,
+                            child: user['avatar'] == null
+                                ? Text(
+                                    (user['name'] as String? ?? 'K')[0].toUpperCase(),
+                                    style: const TextStyle(fontSize: 40, color: kOrange, fontWeight: FontWeight.bold),
+                                  )
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(color: kOrange, shape: BoxShape.circle),
+                              child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
+                    const Text('Klikni za promjenu', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                    const SizedBox(height: 8),
                     if (user['google_id'] != null)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
