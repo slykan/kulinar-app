@@ -29,6 +29,7 @@ class TurnstileWidget extends StatefulWidget {
 class _TurnstileWidgetWebState extends State<TurnstileWidget> {
   static int _counter = 0;
   late final String _viewId;
+  bool _tokenReceived = false;
 
   @override
   void initState() {
@@ -38,9 +39,11 @@ class _TurnstileWidgetWebState extends State<TurnstileWidget> {
 
     final win = _Window(globalContext);
     win._kulinarTurnstileCallback = ((JSString token) {
+      _tokenReceived = true;
       widget.onTokenReceived(token.toDart);
     }).toJS;
     win._kulinarTurnstileExpired = (() {
+      _tokenReceived = false;
       widget.onTokenExpired?.call();
     }).toJS;
 
@@ -52,6 +55,13 @@ class _TurnstileWidgetWebState extends State<TurnstileWidget> {
         ..setAttribute('data-expired-callback', '_kulinarTurnstileExpired')
         ..setAttribute('data-theme', 'dark')
         ..setAttribute('data-language', 'hr');
+    });
+
+    // Fallback: ako CF ne odgovori za 5s, bypass
+    Future.delayed(const Duration(seconds: 5), () {
+      if (!_tokenReceived && mounted) {
+        widget.onTokenReceived('web-bypass');
+      }
     });
   }
 

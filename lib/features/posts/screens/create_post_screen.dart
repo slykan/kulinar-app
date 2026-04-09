@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/posts_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 const kOrange = Color(0xFFE85D04);
 const kBg = Color(0xFF181818);
@@ -75,6 +76,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = ref.watch(authProvider).isLoggedIn;
+    if (!isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/login'));
+      return const Scaffold(backgroundColor: kBg);
+    }
+
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
