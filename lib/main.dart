@@ -64,7 +64,9 @@ class _KulinarAppState extends ConsumerState<KulinarApp> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(authProvider.notifier).init());
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) ref.read(authProvider.notifier).init();
+    });
   }
 
   @override
