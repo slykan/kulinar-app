@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,8 +9,9 @@ import '../../../core/api/api_client.dart';
 
 class GoogleCallbackScreen extends ConsumerStatefulWidget {
   final String? token;
+  final String? user;
   final String? error;
-  const GoogleCallbackScreen({super.key, this.token, this.error});
+  const GoogleCallbackScreen({super.key, this.token, this.user, this.error});
 
   @override
   ConsumerState<GoogleCallbackScreen> createState() => _GoogleCallbackScreenState();
@@ -44,17 +46,28 @@ class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
     final storage = ref.read(authStorageProvider);
     await storage.saveToken(token);
 
-    // Dohvati user podatke — direktno s tokenom u headeru (ne kroz interceptor)
+    // User podaci dolaze direktno iz URL-a — ne trebamo zvati /me
     try {
-      final client = ref.read(apiClientProvider);
-      final response = await client.dio.get(
-        '/me',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-      final user = response.data as Map<String, dynamic>;
-      ref.read(authProvider.notifier).updateUser(user);
-      if (mounted) context.go('/');
+      Map<String, dynamic>? userData;
+      if (widget.user != null) {
+        userData = json.decode(widget.user!) as Map<String, dynamic>;
+      }
+      if (userData != null) {
+        ref.read(authProvider.notifier).updateUser(userData);
+        if (mounted) context.go('/');
+      } else {
+        // Fallback — pokušaj /me
+        final client = ref.read(apiClientProvider);
+        final response = await client.dio.get(
+          '/me',
+          options: Options(headers: {'Authorization': 'Bearer $token'}),
+        );
+        ref.read(authProvider.notifier).updateUser(response.data as Map<String, dynamic>);
+        if (mounted) context.go('/');
+      }
     } catch (e) {
+      setState(() => _errorMsg = e.toString());
+      await Future.delayed(const Duration(seconds: 6));
       if (mounted) context.go('/login');
     }
   }

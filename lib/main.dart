@@ -55,6 +55,7 @@ final _router = GoRouter(
       path: '/google-callback',
       builder: (_, state) => GoogleCallbackScreen(
         token: state.uri.queryParameters['token'],
+        user: state.uri.queryParameters['user'],
         error: state.uri.queryParameters['error'],
       ),
     ),
