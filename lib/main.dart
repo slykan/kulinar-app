@@ -15,6 +15,7 @@ import 'features/calculators/screens/kobasice_calculator_screen.dart';
 import 'features/calculators/screens/tripice_calculator_screen.dart';
 import 'features/calculators/screens/tursija_calculator_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/auth/screens/google_callback_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,10 @@ final _router = GoRouter(
     GoRoute(path: '/kalkulatori/tripice', builder: (_, __) => const TripiceCalculatorScreen()),
     GoRoute(path: '/kalkulatori/tursija', builder: (_, __) => const TursijaCalculatorScreen()),
     GoRoute(path: '/profil', builder: (_, __) => const ProfileScreen()),
+    GoRoute(
+      path: '/google-callback',
+      builder: (_, state) => GoogleCallbackScreen(token: state.uri.queryParameters['token']),
+    ),
   ],
 );
 
