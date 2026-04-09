@@ -35,14 +35,6 @@ class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
       return;
     }
 
-    // Debug — prikaži što smo primili
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Token primljen: "${token.substring(0, token.length > 30 ? 30 : token.length)}"'), duration: const Duration(seconds: 8)),
-      );
-    }
-    await Future.delayed(const Duration(seconds: 1));
-
     // Spremi token
     final storage = ref.read(authStorageProvider);
     await storage.saveToken(token);
@@ -58,13 +50,7 @@ class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
       ref.read(authProvider.notifier).updateUser(user);
       if (mounted) context.go('/');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google login error: $e'), backgroundColor: Colors.red, duration: const Duration(seconds: 10)),
-        );
-        await Future.delayed(const Duration(seconds: 10));
-        context.go('/login');
-      }
+      if (mounted) context.go('/login');
     }
   }
 
