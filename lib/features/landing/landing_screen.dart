@@ -15,6 +15,7 @@ class LandingScreen extends StatelessWidget {
       backgroundColor: kBg,
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _Navbar(),
             _Hero(),

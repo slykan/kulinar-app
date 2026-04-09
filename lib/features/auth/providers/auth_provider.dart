@@ -1,12 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/auth_service.dart';
 import '../../../core/storage/auth_storage.dart';
-
-// ignore: avoid_web_libraries_in_flutter
-import 'auth_provider_web.dart' if (dart.library.io) 'auth_provider_stub.dart' as web_helper;
 
 final secureStorageProvider = Provider<FlutterSecureStorage>((_) => const FlutterSecureStorage());
 
@@ -55,21 +51,6 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> init() async {
     final storage = ref.read(authStorageProvider);
-
-    // Na webu: provjeri localStorage za Google OAuth token
-    if (kIsWeb) {
-      final webToken = web_helper.getLocalStorageToken();
-      final webUser = web_helper.getLocalStorageUser();
-      if (webToken != null) {
-        await storage.saveToken(webToken);
-        web_helper.clearLocalStorageAuth();
-      }
-      if (webUser != null && await storage.hasToken()) {
-        state = state.copyWith(user: webUser);
-        return;
-      }
-    }
-
     final hasToken = await storage.hasToken();
     if (!hasToken) return;
 
@@ -78,7 +59,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await authService.me();
       state = state.copyWith(user: user);
     } catch (_) {
-      await ref.read(authStorageProvider).deleteToken();
+      await storage.deleteToken();
     }
   }
 
