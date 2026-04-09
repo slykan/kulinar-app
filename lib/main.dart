@@ -53,7 +53,10 @@ final _router = GoRouter(
     GoRoute(path: '/profil', builder: (_, __) => const ProfileScreen()),
     GoRoute(
       path: '/google-callback',
-      builder: (_, state) => GoogleCallbackScreen(token: state.uri.queryParameters['token']),
+      builder: (_, state) => GoogleCallbackScreen(
+        token: state.uri.queryParameters['token'],
+        error: state.uri.queryParameters['error'],
+      ),
     ),
   ],
 );

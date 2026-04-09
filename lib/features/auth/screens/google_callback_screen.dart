@@ -8,13 +8,15 @@ import '../../../core/api/api_client.dart';
 
 class GoogleCallbackScreen extends ConsumerStatefulWidget {
   final String? token;
-  const GoogleCallbackScreen({super.key, this.token});
+  final String? error;
+  const GoogleCallbackScreen({super.key, this.token, this.error});
 
   @override
   ConsumerState<GoogleCallbackScreen> createState() => _GoogleCallbackScreenState();
 }
 
 class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
+  String? _errorMsg;
   @override
   void initState() {
     super.initState();
@@ -22,14 +24,17 @@ class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
   }
 
   Future<void> _handleCallback() async {
+    // Prikaži error ako postoji
+    if (widget.error != null) {
+      setState(() => _errorMsg = widget.error);
+      await Future.delayed(const Duration(seconds: 8));
+      if (mounted) context.go('/login');
+      return;
+    }
+
     final token = widget.token;
-    debugPrint('GOOGLE CALLBACK TOKEN: "$token"');
     if (token == null || token.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Token je null ili prazan!'), backgroundColor: Colors.red, duration: Duration(seconds: 10)),
-        );
-      }
+      setState(() => _errorMsg = 'Token nije primljen.');
       await Future.delayed(const Duration(seconds: 5));
       if (mounted) context.go('/login');
       return;
@@ -56,17 +61,29 @@ class _GoogleCallbackScreenState extends ConsumerState<GoogleCallbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Color(0xFF181818),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: Color(0xFFE85D04)),
-            SizedBox(height: 16),
-            Text('Prijava u tijeku...', style: TextStyle(color: Colors.white54)),
-          ],
-        ),
+        child: _errorMsg != null
+            ? Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Greška: $_errorMsg', style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                  ],
+                ),
+              )
+            : const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Color(0xFFE85D04)),
+                  SizedBox(height: 16),
+                  Text('Prijava u tijeku...', style: TextStyle(color: Colors.white54)),
+                ],
+              ),
       ),
     );
   }
