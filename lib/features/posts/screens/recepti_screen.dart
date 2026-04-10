@@ -102,7 +102,7 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
                 ),
               ],
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(isLoggedIn ? 100 : 60),
+                preferredSize: Size.fromHeight(isLoggedIn ? 108 : 60),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Column(
@@ -152,13 +152,20 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
                           ],
                         ],
                       ),
-                      if (isLoggedIn && (_myPostsOnly || _bookmarksOnly)) ...[
+                      if (isLoggedIn) ...[
                         const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _myPostsOnly ? 'Prikazuju se samo tvoji recepti' : 'Prikazuju se samo spremljeni recepti',
-                            style: const TextStyle(color: Colors.white38, fontSize: 11),
+                        SizedBox(
+                          height: 14,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _myPostsOnly
+                                  ? 'Prikazuju se samo tvoji recepti'
+                                  : _bookmarksOnly
+                                      ? 'Prikazuju se samo spremljeni recepti'
+                                      : '',
+                              style: const TextStyle(color: Colors.white38, fontSize: 11),
+                            ),
                           ),
                         ),
                       ],
@@ -411,17 +418,12 @@ class _RecipeCardState extends ConsumerState<_RecipeCard>
                         // Rating stars below title
                         Row(
                           children: [
-                            ...List.generate(5, (i) => Icon(
-                              i < avgRating.round() ? Icons.star : Icons.star_border,
-                              color: avgRating > 0 ? _kOrange : Colors.white24,
-                              size: 13,
-                            )),
-                            if (avgRating > 0) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                '$avgRating${ratingCount > 0 ? ' ($ratingCount)' : ''}',
-                                style: const TextStyle(color: Colors.white38, fontSize: 11),
-                              ),
+                            ..._buildStars(avgRating, 13),
+                            const SizedBox(width: 4),
+                            if (ratingCount > 0) ...[
+                              const Icon(Icons.person_outline, color: Colors.white38, size: 11),
+                              const SizedBox(width: 2),
+                              Text('$ratingCount', style: const TextStyle(color: Colors.white38, fontSize: 11)),
                             ],
                           ],
                         ),
@@ -540,8 +542,8 @@ class _RecipeCardState extends ConsumerState<_RecipeCard>
                                   padding: const EdgeInsets.only(right: 4),
                                   child: Icon(
                                     star <= (myRating ?? 0) ? Icons.star : Icons.star_border,
-                                    color: star <= (myRating ?? 0) ? _kOrange : Colors.white24,
-                                    size: 24,
+                                    color: star <= (myRating ?? 0) ? _kOrange : Colors.white38,
+                                    size: 28,
                                   ),
                                 ),
                               );
@@ -612,6 +614,20 @@ class _RecipeCardState extends ConsumerState<_RecipeCard>
         ],
       ),
     );
+  }
+
+  List<Widget> _buildStars(double avg, double size) {
+    return List.generate(5, (i) {
+      IconData icon;
+      if (avg >= i + 1) {
+        icon = Icons.star;
+      } else if (avg >= i + 0.5) {
+        icon = Icons.star_half;
+      } else {
+        icon = Icons.star_border;
+      }
+      return Icon(icon, color: avg > 0 ? _kOrange : Colors.white24, size: size);
+    });
   }
 
   Widget _thumb() => Container(

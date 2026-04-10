@@ -525,17 +525,18 @@ class _MiniPostTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    ...List.generate(5, (i) => Icon(
-                      i < ratingAverage.round() ? Icons.star : Icons.star_border,
-                      color: ratingAverage > 0 ? kOrange : Colors.white24,
-                      size: 11,
-                    )),
-                    if (ratingAverage > 0) ...[
+                    ...List.generate(5, (i) {
+                      IconData icon;
+                      if (ratingAverage >= i + 1) icon = Icons.star;
+                      else if (ratingAverage >= i + 0.5) icon = Icons.star_half;
+                      else icon = Icons.star_border;
+                      return Icon(icon, color: ratingAverage > 0 ? kOrange : Colors.white24, size: 11);
+                    }),
+                    if (ratingCount > 0) ...[
                       const SizedBox(width: 4),
-                      Text(
-                        '$ratingAverage',
-                        style: const TextStyle(color: Colors.white38, fontSize: 10),
-                      ),
+                      const Icon(Icons.person_outline, color: Colors.white38, size: 9),
+                      const SizedBox(width: 1),
+                      Text('$ratingCount', style: const TextStyle(color: Colors.white38, fontSize: 10)),
                     ],
                   ],
                 ),
@@ -841,20 +842,15 @@ class _LandingRecipeCardState extends ConsumerState<_LandingRecipeCard> {
                 Text(authorName,
                     style: const TextStyle(color: Colors.white38, fontSize: 12)),
                 const SizedBox(height: 10),
-                // Rating row
+                // Rating row - half stars + count
                 Row(
                   children: [
-                    ...List.generate(5, (i) => Icon(
-                      i < avgRating.round() ? Icons.star : Icons.star_border,
-                      color: avgRating > 0 ? kOrange : Colors.white24,
-                      size: 16,
-                    )),
-                    if (avgRating > 0) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        '$avgRating${ratingCount > 0 ? ' ($ratingCount)' : ''}',
-                        style: const TextStyle(color: Colors.white54, fontSize: 12),
-                      ),
+                    ..._buildStars(avgRating, 16),
+                    const SizedBox(width: 6),
+                    if (ratingCount > 0) ...[
+                      const Icon(Icons.person_outline, color: Colors.white38, size: 13),
+                      const SizedBox(width: 2),
+                      Text('$ratingCount', style: const TextStyle(color: Colors.white38, fontSize: 12)),
                     ],
                   ],
                 ),
@@ -875,8 +871,8 @@ class _LandingRecipeCardState extends ConsumerState<_LandingRecipeCard> {
                             padding: const EdgeInsets.only(right: 4),
                             child: Icon(
                               star <= (myRating ?? 0) ? Icons.star : Icons.star_border,
-                              color: star <= (myRating ?? 0) ? kOrange : Colors.white24,
-                              size: 22,
+                              color: star <= (myRating ?? 0) ? kOrange : Colors.white38,
+                              size: 26,
                             ),
                           ),
                         );
@@ -909,12 +905,42 @@ class _LandingRecipeCardState extends ConsumerState<_LandingRecipeCard> {
                     ),
                   ],
                 ],
+                const SizedBox(height: 14),
+                Builder(builder: (context) => SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => context.push('/posts/$slug'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kOrange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Pogledaj recept',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                )),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildStars(double avg, double size) {
+    return List.generate(5, (i) {
+      IconData icon;
+      if (avg >= i + 1) {
+        icon = Icons.star;
+      } else if (avg >= i + 0.5) {
+        icon = Icons.star_half;
+      } else {
+        icon = Icons.star_border;
+      }
+      return Icon(icon, color: avg > 0 ? kOrange : Colors.white24, size: size);
+    });
   }
 
   Widget _imgPlaceholder({bool rounded = false}) => ClipRRect(

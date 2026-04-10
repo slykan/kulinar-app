@@ -232,37 +232,41 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.star, color: kOrange, size: 18),
-                                const SizedBox(width: 6),
-                                Text(
-                                  avgRating > 0 ? '$avgRating' : 'Nema ocjena',
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
-                                ),
+                                ..._buildStars(avgRating, 20),
+                                const SizedBox(width: 8),
+                                if (avgRating > 0)
+                                  Text('$avgRating',
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                                 if (ratingCount > 0) ...[
                                   const SizedBox(width: 6),
-                                  Text('($ratingCount ${ratingCount == 1 ? 'ocjena' : 'ocjena'})',
-                                      style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                                  const Icon(Icons.person_outline, color: Colors.white38, size: 15),
+                                  const SizedBox(width: 2),
+                                  Text('$ratingCount',
+                                      style: const TextStyle(color: Colors.white38, fontSize: 13)),
                                 ],
+                                if (avgRating == 0)
+                                  const Text('Nema ocjena još',
+                                      style: TextStyle(color: Colors.white38, fontSize: 13)),
                               ],
                             ),
                             if (authState.isLoggedIn && !isOwner) ...[
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                               Text(
                                 myRating != null ? 'Tvoja ocjena:' : 'Ocijeni recept:',
                                 style: const TextStyle(color: Colors.white54, fontSize: 12),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Row(
                                 children: List.generate(5, (i) {
                                   final star = i + 1;
                                   return GestureDetector(
                                     onTap: _ratingLoading ? null : () => _rate(postId, star),
                                     child: Padding(
-                                      padding: const EdgeInsets.only(right: 6),
+                                      padding: const EdgeInsets.only(right: 8),
                                       child: Icon(
                                         star <= (myRating ?? 0) ? Icons.star : Icons.star_border,
-                                        color: star <= (myRating ?? 0) ? kOrange : Colors.white24,
-                                        size: 32,
+                                        color: star <= (myRating ?? 0) ? kOrange : Colors.white38,
+                                        size: 36,
                                       ),
                                     ),
                                   );
@@ -311,6 +315,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         },
       ),
     );
+  }
+
+  List<Widget> _buildStars(double avg, double size) {
+    return List.generate(5, (i) {
+      IconData icon;
+      if (avg >= i + 1) {
+        icon = Icons.star;
+      } else if (avg >= i + 0.5) {
+        icon = Icons.star_half;
+      } else {
+        icon = Icons.star_border;
+      }
+      return Icon(icon, color: avg > 0 ? kOrange : Colors.white24, size: size);
+    });
   }
 
   String _formatDate(String dateStr) {
