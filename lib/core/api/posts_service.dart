@@ -75,4 +75,9 @@ class PostsService {
     final response = await _client.dio.get('/my-posts', queryParameters: params);
     return response.data as Map<String, dynamic>;
   }
+
+  Future<Map<String, dynamic>> getBookmarks({int page = 1}) async {
+    final response = await _client.dio.get('/bookmarks', queryParameters: {'page': page});
+    return response.data as Map<String, dynamic>;
+  }
 }

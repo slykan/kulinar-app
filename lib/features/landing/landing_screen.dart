@@ -909,22 +909,6 @@ class _LandingRecipeCardState extends ConsumerState<_LandingRecipeCard> {
                     ),
                   ],
                 ],
-                const SizedBox(height: 14),
-                Builder(builder: (context) => SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => context.push('/posts/$slug'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kOrange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 0,
-                    ),
-                    child: const Text('Cijeli recept',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                )),
               ],
             ),
           ),

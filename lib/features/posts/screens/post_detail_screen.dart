@@ -119,28 +119,56 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 expandedHeight: imageUrl != null ? 260 : 0,
                 pinned: true,
                 backgroundColor: kBg,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => context.pop(),
+                leading: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: kOrange,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                    ),
+                  ),
                 ),
                 actions: [
                   if (authState.isLoggedIn)
-                    _bookmarkLoading
-                        ? const Padding(
-                            padding: EdgeInsets.all(12),
-                            child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: kOrange, strokeWidth: 2)),
-                          )
-                        : IconButton(
-                            icon: Icon(
-                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                              color: isBookmarked ? kOrange : Colors.white,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _bookmarkLoading
+                          ? Container(
+                              width: 36, height: 36,
+                              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                              child: const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: CircularProgressIndicator(color: kOrange, strokeWidth: 2),
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: () => _toggleBookmark(postId),
+                              child: Container(
+                                width: 36, height: 36,
+                                decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                child: Icon(
+                                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                                  color: isBookmarked ? kOrange : Colors.white,
+                                  size: 20,
+                                ),
+                              ),
                             ),
-                            onPressed: () => _toggleBookmark(postId),
-                          ),
+                    ),
                   if (isOwner)
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () => _deletePost(postId),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () => _deletePost(postId),
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(color: Colors.red.withOpacity(0.8), shape: BoxShape.circle),
+                          child: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
+                        ),
+                      ),
                     ),
                 ],
                 flexibleSpace: imageUrl != null

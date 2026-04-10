@@ -22,6 +22,7 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
   bool _myPostsOnly = false;
+  bool _bookmarksOnly = false;
   String _lastSearch = '';
 
   @override
@@ -47,8 +48,19 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
   }
 
   void _toggleMyPosts(bool value) {
-    setState(() => _myPostsOnly = value);
+    setState(() {
+      _myPostsOnly = value;
+      if (value) _bookmarksOnly = false;
+    });
     ref.read(postsProvider.notifier).setMyPostsOnly(value);
+  }
+
+  void _toggleBookmarks(bool value) {
+    setState(() {
+      _bookmarksOnly = value;
+      if (value) _myPostsOnly = false;
+    });
+    ref.read(postsProvider.notifier).setBookmarksOnly(value);
   }
 
   @override
@@ -90,79 +102,64 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
                 ),
               ],
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(isLoggedIn ? 104 : 60),
+                preferredSize: Size.fromHeight(isLoggedIn ? 100 : 60),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Column(
                     children: [
-                      // Search bar
-                      TextField(
-                        controller: _searchController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Pretraži recepte...',
-                          hintStyle: const TextStyle(color: Colors.white38),
-                          prefixIcon: const Icon(Icons.search, color: Colors.white38, size: 20),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, color: Colors.white38, size: 18),
-                                  onPressed: () => _searchController.clear(),
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: const Color(0xFF2C2C2C),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      if (isLoggedIn) ...[
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () => _toggleMyPosts(!_myPostsOnly),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: _myPostsOnly ? _kOrange : const Color(0xFF2C2C2C),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: _myPostsOnly ? _kOrange : Colors.white24,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      _myPostsOnly ? Icons.person : Icons.person_outline,
-                                      color: _myPostsOnly ? Colors.white : Colors.white54,
-                                      size: 15,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Moji recepti',
-                                      style: TextStyle(
-                                        color: _myPostsOnly ? Colors.white : Colors.white54,
-                                        fontSize: 13,
-                                        fontWeight: _myPostsOnly ? FontWeight.w700 : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ],
+                      // Search bar + filter pills u jednom redu
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: 'Pretraži recepte...',
+                                hintStyle: const TextStyle(color: Colors.white38),
+                                prefixIcon: const Icon(Icons.search, color: Colors.white38, size: 20),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, color: Colors.white38, size: 18),
+                                        onPressed: () => _searchController.clear(),
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: const Color(0xFF2C2C2C),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
                                 ),
                               ),
                             ),
+                          ),
+                          if (isLoggedIn) ...[
                             const SizedBox(width: 8),
-                            if (_myPostsOnly)
-                              Text(
-                                'Prikazuju se samo tvoji recepti',
-                                style: TextStyle(color: Colors.white38, fontSize: 11),
-                              ),
+                            // Moji recepti pill
+                            _FilterPill(
+                              active: _myPostsOnly,
+                              icon: _myPostsOnly ? Icons.person : Icons.person_outline,
+                              onTap: () => _toggleMyPosts(!_myPostsOnly),
+                            ),
+                            const SizedBox(width: 6),
+                            // Favoriti pill
+                            _FilterPill(
+                              active: _bookmarksOnly,
+                              icon: _bookmarksOnly ? Icons.bookmark : Icons.bookmark_border,
+                              onTap: () => _toggleBookmarks(!_bookmarksOnly),
+                            ),
                           ],
+                        ],
+                      ),
+                      if (isLoggedIn && (_myPostsOnly || _bookmarksOnly)) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _myPostsOnly ? 'Prikazuju se samo tvoji recepti' : 'Prikazuju se samo spremljeni recepti',
+                            style: const TextStyle(color: Colors.white38, fontSize: 11),
+                          ),
                         ),
                       ],
                     ],
@@ -626,4 +623,30 @@ class _RecipeCardState extends ConsumerState<_RecipeCard>
         ),
         child: const Icon(Icons.restaurant, color: _kOrange, size: 30),
       );
+}
+
+class _FilterPill extends StatelessWidget {
+  final bool active;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _FilterPill({required this.active, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: active ? _kOrange : const Color(0xFF2C2C2C),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: active ? _kOrange : Colors.white24),
+        ),
+        child: Icon(icon, color: active ? Colors.white : Colors.white54, size: 20),
+      ),
+    );
+  }
 }

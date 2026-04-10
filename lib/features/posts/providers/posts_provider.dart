@@ -43,6 +43,7 @@ class PostsState {
 class PostsNotifier extends Notifier<PostsState> {
   String _search = '';
   bool _myPostsOnly = false;
+  bool _bookmarksOnly = false;
 
   @override
   PostsState build() => const PostsState();
@@ -54,6 +55,13 @@ class PostsNotifier extends Notifier<PostsState> {
 
   void setMyPostsOnly(bool value) {
     _myPostsOnly = value;
+    if (value) _bookmarksOnly = false;
+    loadPosts(refresh: true);
+  }
+
+  void setBookmarksOnly(bool value) {
+    _bookmarksOnly = value;
+    if (value) _myPostsOnly = false;
     loadPosts(refresh: true);
   }
 
@@ -66,9 +74,11 @@ class PostsNotifier extends Notifier<PostsState> {
 
     try {
       final service = ref.read(postsServiceProvider);
-      final result = _myPostsOnly
-          ? await service.myPosts(page: page, search: _search)
-          : await service.getPosts(page: page, search: _search);
+      final result = _bookmarksOnly
+          ? await service.getBookmarks(page: page)
+          : _myPostsOnly
+              ? await service.myPosts(page: page, search: _search)
+              : await service.getPosts(page: page, search: _search);
       final newPosts = (result['data'] as List).cast<Map<String, dynamic>>();
       final lastPage = result['last_page'] as int;
 
