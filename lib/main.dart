@@ -10,12 +10,15 @@ import 'features/auth/screens/register_screen.dart';
 import 'features/posts/screens/home_screen.dart';
 import 'features/posts/screens/post_detail_screen.dart';
 import 'features/posts/screens/create_post_screen.dart';
+import 'features/posts/screens/edit_post_screen.dart';
+import 'features/posts/screens/recepti_screen.dart';
 import 'features/calculators/screens/calculators_screen.dart';
 import 'features/calculators/screens/kobasice_calculator_screen.dart';
 import 'features/calculators/screens/tripice_calculator_screen.dart';
 import 'features/calculators/screens/tursija_calculator_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/auth/screens/google_callback_screen.dart';
+import 'features/privacy/privacy_policy_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,17 +35,21 @@ final _router = GoRouter(
   initialLocation: '/splash',
   routes: [
     GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
-    GoRoute(path: '/landing', builder: (_, __) => const LandingScreen()),
     ShellRoute(
       builder: (context, state, child) => _Shell(child: child),
       routes: [
-        GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
+        GoRoute(path: '/', builder: (_, __) => const LandingScreen()),
+        GoRoute(path: '/recepti', builder: (_, __) => const ReceptiScreen()),
         GoRoute(path: '/kalkulatori', builder: (_, __) => const CalculatorsScreen()),
       ],
     ),
     GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
     GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
     GoRoute(path: '/posts/create', builder: (_, __) => const CreatePostScreen()),
+    GoRoute(
+      path: '/posts/:slug/edit',
+      builder: (_, state) => EditPostScreen(slug: state.pathParameters['slug']!),
+    ),
     GoRoute(
       path: '/posts/:slug',
       builder: (_, state) => PostDetailScreen(slug: state.pathParameters['slug']!),
@@ -51,6 +58,7 @@ final _router = GoRouter(
     GoRoute(path: '/kalkulatori/tripice', builder: (_, __) => const TripiceCalculatorScreen()),
     GoRoute(path: '/kalkulatori/tursija', builder: (_, __) => const TursijaCalculatorScreen()),
     GoRoute(path: '/profil', builder: (_, __) => const ProfileScreen()),
+    GoRoute(path: '/privacy', builder: (_, __) => const PrivacyPolicyScreen()),
     GoRoute(
       path: '/google-callback',
       builder: (_, state) => GoogleCallbackScreen(
@@ -181,8 +189,8 @@ class _Shell extends ConsumerWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     if (location == '/recepti') return 1;
-    if (location.startsWith('/kalkulatori')) return 3;
-    if (location == '/profil') return 4;
+    if (location.startsWith('/kalkulatori')) return 2;
+    if (location == '/profil') return 3;
     return 0;
   }
 
@@ -212,10 +220,10 @@ class _Shell extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Početna', selected: _currentIndex(context) == 0, onTap: () => context.go('/')),
-                _NavItem(icon: Icons.menu_book_outlined, selectedIcon: Icons.menu_book, label: 'Recepti', selected: _currentIndex(context) == 1, onTap: () => context.go('/')),
+                _NavItem(icon: Icons.menu_book_outlined, selectedIcon: Icons.menu_book, label: 'Recepti', selected: _currentIndex(context) == 1, onTap: () => context.go('/recepti')),
                 const SizedBox(width: 60), // prostor za FAB
-                _NavItem(icon: Icons.calculate_outlined, selectedIcon: Icons.calculate, label: 'Kalkulator', selected: _currentIndex(context) == 3, onTap: () => context.go('/kalkulatori')),
-                _NavItem(icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Profil', selected: _currentIndex(context) == 4, onTap: () => context.push(isLoggedIn ? '/profil' : '/login')),
+                _NavItem(icon: Icons.calculate_outlined, selectedIcon: Icons.calculate, label: 'Kalkulator', selected: _currentIndex(context) == 2, onTap: () => context.go('/kalkulatori')),
+                _NavItem(icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Profil', selected: _currentIndex(context) == 3, onTap: () => context.push(isLoggedIn ? '/profil' : '/login')),
               ],
             ),
           ),

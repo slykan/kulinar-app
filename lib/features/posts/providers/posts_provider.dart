@@ -41,8 +41,21 @@ class PostsState {
 }
 
 class PostsNotifier extends Notifier<PostsState> {
+  String _search = '';
+  bool _myPostsOnly = false;
+
   @override
   PostsState build() => const PostsState();
+
+  void setSearch(String search) {
+    _search = search;
+    loadPosts(refresh: true);
+  }
+
+  void setMyPostsOnly(bool value) {
+    _myPostsOnly = value;
+    loadPosts(refresh: true);
+  }
 
   Future<void> loadPosts({bool refresh = false}) async {
     if (state.isLoading) return;
@@ -52,7 +65,10 @@ class PostsNotifier extends Notifier<PostsState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      final result = await ref.read(postsServiceProvider).getPosts(page: page);
+      final service = ref.read(postsServiceProvider);
+      final result = _myPostsOnly
+          ? await service.myPosts(page: page, search: _search)
+          : await service.getPosts(page: page, search: _search);
       final newPosts = (result['data'] as List).cast<Map<String, dynamic>>();
       final lastPage = result['last_page'] as int;
 

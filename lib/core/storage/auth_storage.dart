@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -28,8 +29,33 @@ class AuthStorage {
       web.deleteToken();
     } else {
       await _storage.delete(key: 'auth_token');
+      await _storage.delete(key: 'auth_user');
     }
   }
 
   Future<bool> hasToken() async => (await getToken()) != null;
+
+  Future<void> saveUser(Map<String, dynamic> user) async {
+    final json = jsonEncode(user);
+    if (kIsWeb) {
+      web.saveUser(json);
+    } else {
+      await _storage.write(key: 'auth_user', value: json);
+    }
+  }
+
+  Future<Map<String, dynamic>?> getUser() async {
+    String? json;
+    if (kIsWeb) {
+      json = web.getUser();
+    } else {
+      json = await _storage.read(key: 'auth_user');
+    }
+    if (json == null) return null;
+    try {
+      return jsonDecode(json) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
 }

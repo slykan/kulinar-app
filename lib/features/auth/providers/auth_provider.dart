@@ -54,9 +54,18 @@ class AuthNotifier extends Notifier<AuthState> {
     final hasToken = await storage.hasToken();
     if (!hasToken) return;
 
+    // Prvo pokušaj učitati usera iz localStoragea (bez mrežnog poziva)
+    final cachedUser = await storage.getUser();
+    if (cachedUser != null) {
+      state = state.copyWith(user: cachedUser);
+      return;
+    }
+
+    // Fallback: pozovi /me (radi na mobileu, može failati na webu)
     try {
       final authService = ref.read(authServiceProvider);
       final user = await authService.me();
+      await storage.saveUser(user);
       state = state.copyWith(user: user);
     } catch (_) {
       await storage.deleteToken();
@@ -75,7 +84,9 @@ class AuthNotifier extends Notifier<AuthState> {
         password: password,
         turnstileToken: turnstileToken,
       );
-      await ref.read(authStorageProvider).saveToken(result['token']);
+      final storage = ref.read(authStorageProvider);
+      await storage.saveToken(result['token']);
+      await storage.saveUser(result['user'] as Map<String, dynamic>);
       state = state.copyWith(user: result['user'], isLoading: false);
       return true;
     } catch (e) {
@@ -100,7 +111,9 @@ class AuthNotifier extends Notifier<AuthState> {
         passwordConfirmation: passwordConfirmation,
         turnstileToken: turnstileToken,
       );
-      await ref.read(authStorageProvider).saveToken(result['token']);
+      final storage = ref.read(authStorageProvider);
+      await storage.saveToken(result['token']);
+      await storage.saveUser(result['user'] as Map<String, dynamic>);
       state = state.copyWith(user: result['user'], isLoading: false);
       return true;
     } catch (e) {
@@ -111,6 +124,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   void updateUser(Map<String, dynamic> user) {
     state = state.copyWith(user: user);
+    ref.read(authStorageProvider).saveUser(user);
   }
 
   void clearUser() {

@@ -23,6 +23,8 @@ class ApiClient {
         final token = await authStorage.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+          // Fallback: šalje token i kao query param jer Apache skida Authorization header na cPanelu
+          options.queryParameters['token'] = token;
         }
         handler.next(options);
       },

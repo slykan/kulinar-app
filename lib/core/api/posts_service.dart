@@ -7,8 +7,10 @@ class PostsService {
 
   PostsService(this._client);
 
-  Future<Map<String, dynamic>> getPosts({int page = 1}) async {
-    final response = await _client.dio.get('/posts', queryParameters: {'page': page});
+  Future<Map<String, dynamic>> getPosts({int page = 1, String search = ''}) async {
+    final params = <String, dynamic>{'page': page};
+    if (search.isNotEmpty) params['search'] = search;
+    final response = await _client.dio.get('/posts', queryParameters: params);
     return response.data as Map<String, dynamic>;
   }
 
@@ -67,8 +69,10 @@ class PostsService {
     await _client.dio.delete('/posts/$id');
   }
 
-  Future<Map<String, dynamic>> myPosts({int page = 1}) async {
-    final response = await _client.dio.get('/my-posts', queryParameters: {'page': page});
+  Future<Map<String, dynamic>> myPosts({int page = 1, String search = ''}) async {
+    final params = <String, dynamic>{'page': page};
+    if (search.isNotEmpty) params['search'] = search;
+    final response = await _client.dio.get('/my-posts', queryParameters: params);
     return response.data as Map<String, dynamic>;
   }
 }

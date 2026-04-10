@@ -13,3 +13,11 @@ void deleteToken() {
   html.window.localStorage.remove('kulinar_token');
   html.window.localStorage.remove('kulinar_user');
 }
+
+void saveUser(String userJson) {
+  html.window.localStorage['kulinar_user'] = userJson;
+}
+
+String? getUser() {
+  return html.window.localStorage['kulinar_user'];
+}

@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import '../../../shared/widgets/turnstile_widget.dart';
 import '../providers/auth_provider.dart';
+import '../../../core/storage/web_redirect.dart' if (dart.library.io) '../../../core/storage/web_redirect_stub.dart' as webRedirect;
 
 const _siteKey = '0x4AAAAAAA272FNBOuqwbiqe';
 
@@ -55,7 +54,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authService = ref.read(authServiceProvider);
     final url = await authService.getGoogleAuthUrl();
     if (kIsWeb) {
-      html.window.location.href = url;
+      webRedirect.redirectTo(url);
     } else {
       final uri = Uri.parse(url);
       await launchUrl(uri, mode: LaunchMode.externalApplication);

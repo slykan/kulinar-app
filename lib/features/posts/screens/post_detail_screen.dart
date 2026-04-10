@@ -26,6 +26,26 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool? _isBookmarked;
   bool _bookmarkLoading = false;
+  int? _myRating;
+  double? _avgRating;
+  int? _ratingCount;
+  bool _ratingLoading = false;
+
+  Future<void> _rate(int postId, int rating) async {
+    if (_ratingLoading) return;
+    setState(() => _ratingLoading = true);
+    try {
+      final client = ref.read(apiClientProvider);
+      final resp = await client.dio.post('/posts/$postId/rate', data: {'rating': rating});
+      setState(() {
+        _myRating = rating;
+        _avgRating = (resp.data['average'] as num).toDouble();
+        _ratingCount = resp.data['count'] as int;
+      });
+    } catch (_) {} finally {
+      setState(() => _ratingLoading = false);
+    }
+  }
 
   Future<void> _toggleBookmark(int postId) async {
     setState(() => _bookmarkLoading = true);
@@ -88,7 +108,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               : null;
           final isOwner = post['is_owner'] == true;
           final isBookmarked = _isBookmarked ?? (post['is_bookmarked'] == true);
-          final postId = post['id'] as int;
+          final postId = (post['id'] as num).toInt();
+          final avgRating = _avgRating ?? (post['rating_average'] as num?)?.toDouble() ?? 0.0;
+          final ratingCount = _ratingCount ?? post['rating_count'] as int? ?? 0;
+          final myRating = _myRating ?? post['my_rating'] as int?;
 
           return CustomScrollView(
             slivers: [
@@ -166,6 +189,60 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ],
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Rating widget
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: kCard,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.star, color: kOrange, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  avgRating > 0 ? '$avgRating' : 'Nema ocjena',
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
+                                ),
+                                if (ratingCount > 0) ...[
+                                  const SizedBox(width: 6),
+                                  Text('($ratingCount ${ratingCount == 1 ? 'ocjena' : 'ocjena'})',
+                                      style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                                ],
+                              ],
+                            ),
+                            if (authState.isLoggedIn && !isOwner) ...[
+                              const SizedBox(height: 10),
+                              Text(
+                                myRating != null ? 'Tvoja ocjena:' : 'Ocijeni recept:',
+                                style: const TextStyle(color: Colors.white54, fontSize: 12),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: List.generate(5, (i) {
+                                  final star = i + 1;
+                                  return GestureDetector(
+                                    onTap: _ratingLoading ? null : () => _rate(postId, star),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 6),
+                                      child: Icon(
+                                        star <= (myRating ?? 0) ? Icons.star : Icons.star_border,
+                                        color: star <= (myRating ?? 0) ? kOrange : Colors.white24,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                       if (post['excerpt'] != null) ...[
                         const SizedBox(height: 16),
