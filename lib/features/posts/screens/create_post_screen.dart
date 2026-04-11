@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/posts_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../widgets/ingredients_editor.dart';
+import '../widgets/content_editor.dart';
 
 const kOrange = Color(0xFFE85D04);
 const kBg = Color(0xFF181818);
@@ -21,6 +23,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _titleController = TextEditingController();
   final _excerptController = TextEditingController();
   final _contentController = TextEditingController();
+  final _ingredientsKey = GlobalKey<IngredientsEditorState>();
   XFile? _selectedImage;
   bool _isLoading = false;
 
@@ -45,10 +48,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     setState(() => _isLoading = true);
     try {
+      final (servings, ingredientsJson) = _ingredientsKey.currentState?.getData() ?? (null, null);
       await ref.read(postsServiceProvider).createPost(
         title: _titleController.text.trim(),
         content: _contentController.text.trim(),
         excerpt: _excerptController.text.trim().isEmpty ? null : _excerptController.text.trim(),
+        servings: servings,
+        ingredientsJson: ingredientsJson,
         image: _selectedImage,
       );
 
@@ -162,21 +168,18 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Namirnice
+              IngredientsEditor(key: _ingredientsKey),
+              const SizedBox(height: 16),
+
               // Sadržaj
-              TextFormField(
+              const Text(
+                'Sadržaj recepta *',
+                style: TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+              const SizedBox(height: 6),
+              ContentEditor(
                 controller: _contentController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Sadržaj recepta *',
-                  hintText: 'Sastojci, upute za pripremu...',
-                  alignLabelWithHint: true,
-                  prefixIcon: Padding(
-                    padding: EdgeInsets.only(bottom: 120),
-                    child: Icon(Icons.notes, color: kOrange),
-                  ),
-                ),
-                maxLines: 15,
-                minLines: 8,
                 validator: (v) => v == null || v.isEmpty ? 'Sadržaj je obavezan' : null,
               ),
               const SizedBox(height: 32),

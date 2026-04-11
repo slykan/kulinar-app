@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/posts_provider.dart';
+import '../widgets/ingredients_editor.dart';
+import '../widgets/content_editor.dart';
 
 const _kOrange = Color(0xFFE85D04);
 const _kBg = Color(0xFF181818);
@@ -21,10 +23,13 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   final _titleController = TextEditingController();
   final _excerptController = TextEditingController();
   final _contentController = TextEditingController();
+  final _ingredientsKey = GlobalKey<IngredientsEditorState>();
   XFile? _newImage;
   bool _isLoading = true;
   bool _isSaving = false;
   Map<String, dynamic>? _post;
+  int? _initialServings;
+  List<Map<String, dynamic>>? _initialIngredients;
 
   @override
   void initState() {
@@ -36,11 +41,18 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     try {
       final service = ref.read(postsServiceProvider);
       final post = await service.getPost(widget.slug);
+      final rawIngredients = post['ingredients'];
+      List<Map<String, dynamic>>? ingredients;
+      if (rawIngredients is List) {
+        ingredients = rawIngredients.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
       setState(() {
         _post = post;
         _titleController.text = post['title'] ?? '';
         _excerptController.text = post['excerpt'] ?? '';
         _contentController.text = post['content'] ?? '';
+        _initialServings = post['servings'] as int?;
+        _initialIngredients = ingredients;
         _isLoading = false;
       });
     } catch (e) {
@@ -63,12 +75,15 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     setState(() => _isSaving = true);
 
     try {
+      final (servings, ingredientsJson) = _ingredientsKey.currentState?.getData() ?? (null, null);
       final service = ref.read(postsServiceProvider);
       await service.updatePost(
         (_post!['id'] as num).toInt(),
         title: _titleController.text.trim(),
         content: _contentController.text.trim(),
         excerpt: _excerptController.text.trim().isEmpty ? null : _excerptController.text.trim(),
+        servings: servings,
+        ingredientsJson: ingredientsJson,
         image: _newImage,
       );
       ref.read(postsProvider.notifier).loadPosts(refresh: true);
@@ -220,20 +235,22 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
               ),
               const SizedBox(height: 16),
 
-              TextFormField(
-                controller: _contentController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Sadržaj recepta *',
-                  hintText: 'Sastojci, upute za pripremu...',
-                  alignLabelWithHint: true,
-                  prefixIcon: Padding(
-                    padding: EdgeInsets.only(bottom: 120),
-                    child: Icon(Icons.notes, color: _kOrange),
-                  ),
+              // Namirnice
+              if (!_isLoading)
+                IngredientsEditor(
+                  key: _ingredientsKey,
+                  initialServings: _initialServings,
+                  initialIngredients: _initialIngredients,
                 ),
-                maxLines: 15,
-                minLines: 8,
+              if (!_isLoading) const SizedBox(height: 16),
+
+              const Text(
+                'Sadržaj recepta *',
+                style: TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+              const SizedBox(height: 6),
+              ContentEditor(
+                controller: _contentController,
                 validator: (v) => v == null || v.isEmpty ? 'Sadržaj je obavezan' : null,
               ),
               const SizedBox(height: 32),

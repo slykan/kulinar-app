@@ -158,7 +158,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               ),
                             ),
                     ),
-                  if (isOwner)
+                  if (isOwner) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: GestureDetector(
+                        onTap: () => context.push('/posts/${widget.slug}/edit'),
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: const BoxDecoration(color: kOrange, shape: BoxShape.circle),
+                          child: const Icon(Icons.edit_outlined, color: Colors.white, size: 19),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: GestureDetector(
@@ -170,6 +181,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                       ),
                     ),
+                  ],
                 ],
                 flexibleSpace: imageUrl != null
                     ? FlexibleSpaceBar(
@@ -186,9 +198,37 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        post['title'] ?? '',
-                        style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800, height: 1.2),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              post['title'] ?? '',
+                              style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800, height: 1.2),
+                            ),
+                          ),
+                          if (isOwner) ...[
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              onTap: () => context.push('/posts/${widget.slug}/edit'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                                decoration: BoxDecoration(
+                                  color: kOrange,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.edit_outlined, color: Colors.white, size: 14),
+                                    SizedBox(width: 5),
+                                    Text('Uredi', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -287,22 +327,31 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ),
                           child: Text(
                             post['excerpt'],
-                            style: const TextStyle(color: Colors.white70, fontStyle: FontStyle.italic, fontSize: 15, height: 1.5),
+                            style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.7),
                           ),
                         ),
+                      ],
+                      // Ingredients
+                      if (_hasIngredients(post)) ...[
+                        const SizedBox(height: 16),
+                        _buildIngredientsCard(post),
                       ],
                       const SizedBox(height: 20),
                       const Divider(color: Colors.white12),
                       const SizedBox(height: 8),
                       Html(
-                        data: post['content'] ?? '',
+                        data: _prepareContent(post['content'] ?? ''),
                         style: {
-                          'body': Style(color: Colors.white70, fontSize: FontSize(15), lineHeight: LineHeight(1.6)),
-                          'h1': Style(color: Colors.white, fontWeight: FontWeight.bold),
-                          'h2': Style(color: Colors.white, fontWeight: FontWeight.bold),
-                          'h3': Style(color: Colors.white, fontWeight: FontWeight.w600),
-                          'strong': Style(color: Colors.white),
-                          'p': Style(color: Colors.white70),
+                          'body': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8)),
+                          'p': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8), margin: Margins.only(bottom: 12)),
+                          'h1': Style(color: Colors.white, fontWeight: FontWeight.w800, fontSize: FontSize(22), margin: Margins.only(top: 20, bottom: 8)),
+                          'h2': Style(color: kOrange, fontWeight: FontWeight.w700, fontSize: FontSize(18), margin: Margins.only(top: 18, bottom: 6)),
+                          'h3': Style(color: Colors.white, fontWeight: FontWeight.w600, fontSize: FontSize(16), margin: Margins.only(top: 14, bottom: 4)),
+                          'strong': Style(color: Colors.white, fontWeight: FontWeight.w700),
+                          'em': Style(color: Colors.white70, fontStyle: FontStyle.italic),
+                          'li': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8), margin: Margins.only(bottom: 4)),
+                          'ul': Style(margin: Margins.only(bottom: 12, left: 8)),
+                          'ol': Style(margin: Margins.only(bottom: 12, left: 8)),
                         },
                       ),
                       const SizedBox(height: 40),
@@ -315,6 +364,171 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         },
       ),
     );
+  }
+
+  bool _hasIngredients(Map<String, dynamic> post) {
+    final servings = post['servings'];
+    final ingredients = post['ingredients'];
+    return (servings != null && (servings as num) > 0) ||
+        (ingredients is List && ingredients.isNotEmpty);
+  }
+
+  Widget _buildIngredientsCard(Map<String, dynamic> post) {
+    final servings = post['servings'] as num?;
+    final rawIngredients = post['ingredients'];
+    final List<dynamic> ingredients =
+        rawIngredients is List ? rawIngredients : [];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: kCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+            child: Row(
+              children: [
+                const Icon(Icons.restaurant_menu, color: kOrange, size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'Namirnice',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15),
+                ),
+                if (servings != null && servings > 0) ...[
+                  const Spacer(),
+                  const Icon(Icons.people_outline,
+                      color: Colors.white, size: 16),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Za $servings ${_servingsLabel(servings.toInt())}',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (ingredients.isNotEmpty) ...[
+            const Divider(height: 1, color: Colors.white10),
+            // Column headers
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: const [
+                  Expanded(
+                    flex: 5,
+                    child: Text('Namirnica',
+                        style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text('Količina',
+                        style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text('Jedinica',
+                        style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+            ...List.generate(ingredients.length, (i) {
+              final ing = ingredients[i] as Map<String, dynamic>? ?? {};
+              final isLast = i == ingredients.length - 1;
+              return Column(
+                children: [
+                  const Divider(height: 1, color: Colors.white10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 9),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 5,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: kOrange,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  ing['name']?.toString() ?? '',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            ing['quantity']?.toString() ?? '',
+                            style: const TextStyle(
+                                color: kOrange, fontSize: 14, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            ing['unit']?.toString() ?? '',
+                            style: const TextStyle(
+                                color: kOrange, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ],
+          const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+
+  String _prepareContent(String content) {
+    // If already contains HTML tags, return as-is
+    if (content.contains('<') && content.contains('>')) return content;
+    // Plain text: wrap paragraphs in <p> tags
+    final paragraphs = content.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    if (paragraphs.isEmpty) return content;
+    return paragraphs.map((p) => '<p>${p.trim()}</p>').join('');
+  }
+
+  String _servingsLabel(int n) {
+    if (n == 1) return 'osobu';
+    if (n >= 2 && n <= 4) return 'osobe';
+    return 'osoba';
   }
 
   List<Widget> _buildStars(double avg, double size) {

@@ -23,12 +23,16 @@ class PostsService {
     required String title,
     required String content,
     String? excerpt,
+    int? servings,
+    String? ingredientsJson,
     XFile? image,
   }) async {
     final data = <String, dynamic>{
       'title': title,
       'content': content,
       if (excerpt != null) 'excerpt': excerpt,
+      if (servings != null) 'servings': servings.toString(),
+      if (ingredientsJson != null) 'ingredients': ingredientsJson,
     };
 
     if (image != null) {
@@ -46,12 +50,16 @@ class PostsService {
     String? title,
     String? content,
     String? excerpt,
+    int? servings,
+    String? ingredientsJson,
     XFile? image,
   }) async {
     final data = <String, dynamic>{
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (excerpt != null) 'excerpt': excerpt,
+      if (servings != null) 'servings': servings.toString(),
+      if (ingredientsJson != null) 'ingredients': ingredientsJson,
       '_method': 'PUT',
     };
 
