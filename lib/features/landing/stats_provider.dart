@@ -20,7 +20,7 @@ final landingPostsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) as
   try {
     final response = await client.dio.get(
       '/posts',
-      queryParameters: {'page': 1, 'per_page': 10},
+      queryParameters: {'page': 1, 'per_page': 6},
       options: Options(sendTimeout: const Duration(seconds: 8), receiveTimeout: const Duration(seconds: 8)),
     );
     final data = response.data as Map<String, dynamic>;

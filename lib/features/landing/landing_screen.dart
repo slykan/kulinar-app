@@ -697,7 +697,9 @@ class _StatItem extends StatelessWidget {
 class _RecentPosts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWide = MediaQuery.of(context).size.width > 700;
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 700;
+    final isDesktop = width > 960;
     final postsAsync = ref.watch(landingPostsProvider);
 
     return Container(
@@ -723,10 +725,15 @@ class _RecentPosts extends ConsumerWidget {
               }
               return Column(
                 children: [
-                  ...posts.map((post) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _LandingRecipeCard(post: post),
-                      )),
+                  if (isDesktop)
+                    // 2-column grid on desktop
+                    _buildGrid(posts)
+                  else
+                    // Single column on mobile/tablet
+                    ...posts.map((post) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _LandingRecipeCard(post: post),
+                        )),
                   const SizedBox(height: 24),
                   Builder(builder: (context) => SizedBox(
                     width: double.infinity,
@@ -751,6 +758,32 @@ class _RecentPosts extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildGrid(List<Map<String, dynamic>> posts) {
+    final rows = <Widget>[];
+    for (var i = 0; i < posts.length; i += 2) {
+      final left = posts[i];
+      final right = i + 1 < posts.length ? posts[i + 1] : null;
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _LandingRecipeCard(post: left)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: right != null
+                    ? _LandingRecipeCard(post: right)
+                    : const SizedBox(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(children: rows);
   }
 }
 
@@ -890,20 +923,11 @@ class _LandingRecipeCardState extends ConsumerState<_LandingRecipeCard> {
                 if (content.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Text(
-                    _expanded ? content : shortContent,
+                    content,
                     style: const TextStyle(color: Colors.white60, fontSize: 13, height: 1.6),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  if (needsExpand) ...[
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: () => setState(() => _expanded = !_expanded),
-                      child: Text(
-                        _expanded ? 'Manje ▲' : 'Više ▼',
-                        style: const TextStyle(
-                            color: kOrange, fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
                 ],
                 const SizedBox(height: 14),
                 Builder(builder: (context) => SizedBox(

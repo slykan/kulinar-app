@@ -63,6 +63,53 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
     ref.read(postsProvider.notifier).setBookmarksOnly(value);
   }
 
+  Widget _buildDesktopGrid(dynamic postsState, dynamic authState) {
+    final posts = postsState.posts as List;
+    final hasMore = postsState.hasMore as bool;
+    final rowCount = ((posts.length + 1) / 2).ceil() + (hasMore ? 1 : 0);
+
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, rowIndex) {
+            final leftIndex = rowIndex * 2;
+            final rightIndex = leftIndex + 1;
+
+            if (leftIndex >= posts.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator(color: _kOrange, strokeWidth: 2)),
+              );
+            }
+
+            final leftPost = posts[leftIndex] as Map<String, dynamic>;
+            final rightPost = rightIndex < posts.length ? posts[rightIndex] as Map<String, dynamic> : null;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _RecipeCard(post: leftPost, currentUserId: authState.user?['id']),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: rightPost != null
+                        ? _RecipeCard(post: rightPost, currentUserId: authState.user?['id'])
+                        : const SizedBox(),
+                  ),
+                ],
+              ),
+            );
+          },
+          childCount: rowCount,
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -75,6 +122,7 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
     final postsState = ref.watch(postsProvider);
     final authState = ref.watch(authProvider);
     final isLoggedIn = authState.isLoggedIn;
+    final isDesktop = MediaQuery.of(context).size.width > 960;
 
     return Scaffold(
       backgroundColor: _kBg,
@@ -198,6 +246,8 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
                   ),
                 ),
               )
+            else if (isDesktop)
+              _buildDesktopGrid(postsState, authState)
             else
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -432,7 +482,7 @@ class _RecipeCardState extends ConsumerState<_RecipeCard>
                           Text(
                             excerpt,
                             style: const TextStyle(color: Colors.white54, fontSize: 12),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],

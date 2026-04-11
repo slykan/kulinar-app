@@ -106,7 +106,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           final imageUrl = post['image'] != null
               ? 'https://kulinar.app/storage/${post['image']}'
               : null;
-          final isOwner = post['is_owner'] == true;
+          final currentUserId = authState.user?['id'];
+          final postUserId = post['user']?['id'] ?? post['user_id'];
+          final isOwner = currentUserId != null && currentUserId == postUserId;
           final isBookmarked = _isBookmarked ?? (post['is_bookmarked'] == true);
           final postId = (post['id'] as num).toInt();
           final avgRating = _avgRating ?? (post['rating_average'] as num?)?.toDouble() ?? 0.0;
@@ -316,44 +318,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ],
                         ),
                       ),
-                      if (post['excerpt'] != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: kOrange.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: kOrange.withOpacity(0.2)),
-                          ),
-                          child: Text(
-                            post['excerpt'],
-                            style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.7),
-                          ),
-                        ),
-                      ],
-                      // Ingredients
-                      if (_hasIngredients(post)) ...[
-                        const SizedBox(height: 16),
-                        _buildIngredientsCard(post),
-                      ],
                       const SizedBox(height: 20),
-                      const Divider(color: Colors.white12),
-                      const SizedBox(height: 8),
-                      Html(
-                        data: _prepareContent(post['content'] ?? ''),
-                        style: {
-                          'body': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8)),
-                          'p': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8), margin: Margins.only(bottom: 12)),
-                          'h1': Style(color: Colors.white, fontWeight: FontWeight.w800, fontSize: FontSize(22), margin: Margins.only(top: 20, bottom: 8)),
-                          'h2': Style(color: kOrange, fontWeight: FontWeight.w700, fontSize: FontSize(18), margin: Margins.only(top: 18, bottom: 6)),
-                          'h3': Style(color: Colors.white, fontWeight: FontWeight.w600, fontSize: FontSize(16), margin: Margins.only(top: 14, bottom: 4)),
-                          'strong': Style(color: Colors.white, fontWeight: FontWeight.w700),
-                          'em': Style(color: Colors.white70, fontStyle: FontStyle.italic),
-                          'li': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8), margin: Margins.only(bottom: 4)),
-                          'ul': Style(margin: Margins.only(bottom: 12, left: 8)),
-                          'ol': Style(margin: Margins.only(bottom: 12, left: 8)),
-                        },
-                      ),
+                      _buildContentArea(context, post),
                       const SizedBox(height: 40),
                     ],
                   ),
@@ -363,6 +329,82 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildContentArea(BuildContext context, Map<String, dynamic> post) {
+    final isDesktop = MediaQuery.of(context).size.width > 960;
+    final hasIngredients = _hasIngredients(post);
+
+    final excerptWidget = post['excerpt'] != null
+        ? Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: kOrange.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: kOrange.withOpacity(0.2)),
+            ),
+            child: Text(
+              post['excerpt'],
+              style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.7),
+            ),
+          )
+        : null;
+
+    final htmlWidget = Html(
+      data: _prepareContent(post['content'] ?? ''),
+      style: {
+        'body': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8)),
+        'p': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8), margin: Margins.only(bottom: 12)),
+        'h1': Style(color: Colors.white, fontWeight: FontWeight.w800, fontSize: FontSize(22), margin: Margins.only(top: 20, bottom: 8)),
+        'h2': Style(color: kOrange, fontWeight: FontWeight.w700, fontSize: FontSize(18), margin: Margins.only(top: 18, bottom: 6)),
+        'h3': Style(color: Colors.white, fontWeight: FontWeight.w600, fontSize: FontSize(16), margin: Margins.only(top: 14, bottom: 4)),
+        'strong': Style(color: Colors.white, fontWeight: FontWeight.w700),
+        'em': Style(color: Colors.white70, fontStyle: FontStyle.italic),
+        'li': Style(color: Colors.white, fontSize: FontSize(16), lineHeight: LineHeight(1.8), margin: Margins.only(bottom: 4)),
+        'ul': Style(margin: Margins.only(bottom: 12, left: 8)),
+        'ol': Style(margin: Margins.only(bottom: 12, left: 8)),
+      },
+    );
+
+    if (isDesktop && hasIngredients) {
+      // Desktop: tekst lijevo, namirnice desno
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Lijevo — content
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (excerptWidget != null) ...[excerptWidget, const SizedBox(height: 16)],
+                const Divider(color: Colors.white12),
+                const SizedBox(height: 8),
+                htmlWidget,
+              ],
+            ),
+          ),
+          const SizedBox(width: 24),
+          // Desno — namirnice
+          Expanded(
+            flex: 2,
+            child: _buildIngredientsCard(post),
+          ),
+        ],
+      );
+    }
+
+    // Mobile / nema namirnica — stacked
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (excerptWidget != null) ...[excerptWidget, const SizedBox(height: 16)],
+        if (hasIngredients) ...[_buildIngredientsCard(post), const SizedBox(height: 20)],
+        const Divider(color: Colors.white12),
+        const SizedBox(height: 8),
+        htmlWidget,
+      ],
     );
   }
 
