@@ -92,7 +92,7 @@ class _KulinarAppState extends ConsumerState<KulinarApp> {
       title: 'Kulinar.app',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
-      builder: (context, child) => SelectionArea(child: child!),
+      builder: (context, child) => child!,
       theme: ThemeData(
         brightness: Brightness.dark,
         fontFamily: GoogleFonts.inter().fontFamily,

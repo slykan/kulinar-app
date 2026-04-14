@@ -1,4 +1,4 @@
-package app.kulinar.kulinar_app
+package com.kulinar.app
 
 import io.flutter.embedding.android.FlutterActivity
 
