@@ -43,8 +43,10 @@ class _Navbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+    return SafeArea(
+      bottom: false,
+      child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: kBg.withOpacity(0.95),
         border: const Border(bottom: BorderSide(color: Colors.white10)),
@@ -104,7 +106,7 @@ class _Navbar extends ConsumerWidget {
             ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -762,21 +764,24 @@ class _RecentPosts extends ConsumerWidget {
 
   Widget _buildGrid(List<Map<String, dynamic>> posts) {
     final rows = <Widget>[];
-    for (var i = 0; i < posts.length; i += 2) {
-      final left = posts[i];
-      final right = i + 1 < posts.length ? posts[i + 1] : null;
+    for (var i = 0; i < posts.length; i += 3) {
+      final a = posts[i];
+      final b = i + 1 < posts.length ? posts[i + 1] : null;
+      final c = i + 2 < posts.length ? posts[i + 2] : null;
       rows.add(
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _LandingRecipeCard(post: left)),
+              Expanded(child: _LandingRecipeCard(post: a)),
               const SizedBox(width: 12),
               Expanded(
-                child: right != null
-                    ? _LandingRecipeCard(post: right)
-                    : const SizedBox(),
+                child: b != null ? _LandingRecipeCard(post: b) : const SizedBox(),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: c != null ? _LandingRecipeCard(post: c) : const SizedBox(),
               ),
             ],
           ),
@@ -984,16 +989,22 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       color: const Color(0xFF0D0D0D),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
         children: [
-          const Text('© 2026 Kulinar.app · Sva prava pridržana', style: TextStyle(color: Colors.white24, fontSize: 12)),
-          const SizedBox(width: 16),
           GestureDetector(
             onTap: () => context.push('/privacy'),
-            child: const Text('Politika privatnosti', style: TextStyle(color: Colors.white38, fontSize: 12, decoration: TextDecoration.underline, decorationColor: Colors.white38)),
+            child: const Text(
+              'Politika privatnosti',
+              style: TextStyle(color: kOrange, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '© 2026 Kulinar.app · Sva prava pridržana',
+            style: TextStyle(color: Colors.white24, fontSize: 11),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/posts_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/api/api_client.dart';
+import '../widgets/recent_recipes_sidebar.dart';
 
 const _kOrange = Color(0xFFE85D04);
 const _kBg = Color(0xFF181818);
@@ -124,14 +125,12 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
     final isLoggedIn = authState.isLoggedIn;
     final isDesktop = MediaQuery.of(context).size.width > 960;
 
-    return Scaffold(
-      backgroundColor: _kBg,
-      body: RefreshIndicator(
-        color: _kOrange,
-        backgroundColor: _kSurface,
-        onRefresh: () async =>
-            ref.read(postsProvider.notifier).loadPosts(refresh: true),
-        child: CustomScrollView(
+    final mainContent = RefreshIndicator(
+      color: _kOrange,
+      backgroundColor: _kSurface,
+      onRefresh: () async =>
+          ref.read(postsProvider.notifier).loadPosts(refresh: true),
+      child: CustomScrollView(
           controller: _scrollController,
           slivers: [
             SliverAppBar(
@@ -275,7 +274,24 @@ class _ReceptiScreenState extends ConsumerState<ReceptiScreen> {
               ),
           ],
         ),
-      ),
+      );
+
+    return Scaffold(
+      backgroundColor: _kBg,
+      body: isDesktop
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: mainContent),
+                Container(
+                  width: 276,
+                  color: _kBg,
+                  padding: const EdgeInsets.fromLTRB(0, 0, 24, 24),
+                  child: const RecentRecipesSidebar(),
+                ),
+              ],
+            )
+          : mainContent,
     );
   }
 }
