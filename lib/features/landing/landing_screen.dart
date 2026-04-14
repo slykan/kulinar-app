@@ -737,22 +737,30 @@ class _RecentPosts extends ConsumerWidget {
                           child: _LandingRecipeCard(post: post),
                         )),
                   const SizedBox(height: 24),
-                  Builder(builder: (context) => SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => context.go('/recepti'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kOrange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        elevation: 0,
+                  Builder(builder: (context) {
+                    final btnWidth = isDesktop
+                        ? (MediaQuery.of(context).size.width - 160 - 24) / 3
+                        : double.infinity;
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: btnWidth,
+                        child: ElevatedButton.icon(
+                          onPressed: () => context.go('/recepti'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: kOrange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.menu_book_outlined, size: 20),
+                          label: const Text('Svi recepti',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        ),
                       ),
-                      icon: const Icon(Icons.menu_book_outlined, size: 20),
-                      label: const Text('Svi recepti',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                    ),
-                  )),
+                    );
+                  }),
                 ],
               );
             },
