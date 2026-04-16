@@ -739,10 +739,9 @@ class _RecentPosts extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Builder(builder: (context) {
                     final btnWidth = isDesktop
-                        ? (MediaQuery.of(context).size.width - 160 - 24) / 3
+                        ? (MediaQuery.of(context).size.width - 160 - 36) / 4
                         : double.infinity;
-                    return Align(
-                      alignment: Alignment.centerLeft,
+                    return Center(
                       child: SizedBox(
                         width: btnWidth,
                         child: ElevatedButton.icon(
@@ -772,10 +771,11 @@ class _RecentPosts extends ConsumerWidget {
 
   Widget _buildGrid(List<Map<String, dynamic>> posts) {
     final rows = <Widget>[];
-    for (var i = 0; i < posts.length; i += 3) {
+    for (var i = 0; i < posts.length; i += 4) {
       final a = posts[i];
       final b = i + 1 < posts.length ? posts[i + 1] : null;
       final c = i + 2 < posts.length ? posts[i + 2] : null;
+      final d = i + 3 < posts.length ? posts[i + 3] : null;
       rows.add(
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -784,13 +784,11 @@ class _RecentPosts extends ConsumerWidget {
             children: [
               Expanded(child: _LandingRecipeCard(post: a)),
               const SizedBox(width: 12),
-              Expanded(
-                child: b != null ? _LandingRecipeCard(post: b) : const SizedBox(),
-              ),
+              Expanded(child: b != null ? _LandingRecipeCard(post: b) : const SizedBox()),
               const SizedBox(width: 12),
-              Expanded(
-                child: c != null ? _LandingRecipeCard(post: c) : const SizedBox(),
-              ),
+              Expanded(child: c != null ? _LandingRecipeCard(post: c) : const SizedBox()),
+              const SizedBox(width: 12),
+              Expanded(child: d != null ? _LandingRecipeCard(post: d) : const SizedBox()),
             ],
           ),
         ),
