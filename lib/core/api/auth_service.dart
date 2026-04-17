@@ -35,8 +35,11 @@ class AuthService {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<String> getGoogleAuthUrl() async {
-    final response = await _client.dio.get('/auth/google');
+  Future<String> getGoogleAuthUrl({bool mobile = false}) async {
+    final response = await _client.dio.get(
+      '/auth/google',
+      queryParameters: mobile ? {'mobile': '1'} : null,
+    );
     return response.data['url'] as String;
   }
 

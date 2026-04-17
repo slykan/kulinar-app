@@ -52,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Delay zbog CF Turnstile timing problema
     await Future.delayed(const Duration(milliseconds: 500));
     final authService = ref.read(authServiceProvider);
-    final url = await authService.getGoogleAuthUrl();
+    final url = await authService.getGoogleAuthUrl(mobile: !kIsWeb);
     if (kIsWeb) {
       webRedirect.redirectTo(url);
     } else {
