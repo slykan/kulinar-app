@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/posts_provider.dart';
+import 'post_detail_screen.dart';
 import '../widgets/ingredients_editor.dart';
 import '../widgets/content_editor.dart';
 
@@ -87,6 +88,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         image: _newImage,
       );
       ref.read(postsProvider.notifier).loadPosts(refresh: true);
+      ref.invalidate(postDetailProvider(widget.slug));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Recept spremljen!'), backgroundColor: _kOrange),

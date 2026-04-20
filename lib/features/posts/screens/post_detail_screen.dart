@@ -118,6 +118,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
+  Future<void> _refresh() async {
+    ref.invalidate(postDetailProvider(widget.slug));
+  }
+
   @override
   Widget build(BuildContext context) {
     final postAsync = ref.watch(postDetailProvider(widget.slug));
@@ -127,10 +131,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       backgroundColor: kBg,
       body: postAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kOrange)),
-        error: (e, _) => Center(child: Text('Greška: $e', style: const TextStyle(color: Colors.white))),
+        error: (e, _) => RefreshIndicator(
+          color: kOrange,
+          backgroundColor: kCard,
+          onRefresh: _refresh,
+          child: ListView(
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.4),
+              Center(child: Text('Greška: $e', style: const TextStyle(color: Colors.white))),
+            ],
+          ),
+        ),
         data: (post) {
-          final imageUrl = post['image'] != null
-              ? 'https://kulinar.app/storage/${post['image']}'
+          final rawImage = post['image'] as String?;
+          final imageUrl = (rawImage != null && rawImage.isNotEmpty)
+              ? (rawImage.startsWith('http')
+                  ? rawImage
+                  : 'https://kulinar.app/storage/$rawImage')
               : null;
           final currentUserId = authState.user?['id'];
           final postUserId = post['user']?['id'] ?? post['user_id'];
@@ -141,7 +158,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           final ratingCount = _ratingCount ?? post['rating_count'] as int? ?? 0;
           final myRating = _myRating ?? post['my_rating'] as int?;
 
-          return CustomScrollView(
+          return RefreshIndicator(
+            color: kOrange,
+            backgroundColor: kCard,
+            onRefresh: _refresh,
+            child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar(
                 expandedHeight: imageUrl != null ? 260 : 0,
@@ -227,6 +249,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         background: CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(color: Colors.white10),
+                          errorWidget: (_, __, ___) => Container(
+                            color: Colors.white10,
+                            child: const Icon(Icons.restaurant, color: Colors.white24, size: 64),
+                          ),
                         ),
                       )
                     : null,
@@ -363,6 +390,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
               ),
             ],
+          ),
           );
         },
       ),
