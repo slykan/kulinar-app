@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/api/api_client.dart';
@@ -45,6 +46,23 @@ class AuthState {
   }
 }
 
+String _parseError(Object e) {
+  if (e is DioException) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final errors = data['errors'];
+      if (errors is Map && errors.isNotEmpty) {
+        final first = errors.values.first;
+        return (first is List && first.isNotEmpty) ? first.first.toString() : first.toString();
+      }
+      if (data['message'] != null) return data['message'].toString();
+    }
+    if (e.response?.statusCode == 422) return 'Pogrešni podaci. Provjeri email i lozinku.';
+    if (e.response?.statusCode == 401) return 'Pogrešan email ili lozinka.';
+  }
+  return 'Greška. Pokušaj ponovo.';
+}
+
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() => const AuthState();
@@ -90,7 +108,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(user: result['user'], isLoading: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
       return false;
     }
   }
@@ -117,7 +135,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(user: result['user'], isLoading: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
       return false;
     }
   }

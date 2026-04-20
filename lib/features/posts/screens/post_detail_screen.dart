@@ -1,8 +1,13 @@
+import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../providers/posts_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -92,6 +97,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
+  Future<void> _sharePost(String title, String? imageUrl) async {
+    final shareText = 'Kulinar.app — $title';
+    if (imageUrl == null || kIsWeb) {
+      await Share.share(shareText, subject: 'Kulinar.app — $title');
+      return;
+    }
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/share_image.jpg');
+      await file.writeAsBytes(response.bodyBytes);
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: shareText,
+        subject: 'Kulinar.app — $title',
+      );
+    } catch (_) {
+      await Share.share(shareText, subject: 'Kulinar.app — $title');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final postAsync = ref.watch(postDetailProvider(widget.slug));
@@ -135,6 +161,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                 ),
                 actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => _sharePost(post['title'] ?? '', imageUrl),
+                      child: Container(
+                        width: 36, height: 36,
+                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                        child: const Icon(Icons.share_outlined, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ),
                   if (authState.isLoggedIn)
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
