@@ -246,13 +246,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ],
                 flexibleSpace: imageUrl != null
                     ? FlexibleSpaceBar(
-                        background: CachedNetworkImage(
-                          imageUrl: imageUrl,
+                        background: Image.network(
+                          imageUrl,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: Colors.white10),
-                          errorWidget: (_, __, ___) => Container(
-                            color: Colors.white10,
-                            child: const Icon(Icons.restaurant, color: Colors.white24, size: 64),
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null ? child : Container(color: Colors.white10),
+                          errorBuilder: (_, error, __) => Container(
+                            color: Colors.red.withOpacity(0.3),
+                            child: Center(
+                              child: Text(
+                                'Greška: $error\n$imageUrl',
+                                style: const TextStyle(color: Colors.white, fontSize: 10),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ),
                         ),
                       )
