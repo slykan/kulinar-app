@@ -206,7 +206,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: _QuickButton(
                             icon: Icons.menu_book_outlined,
                             label: 'Svi recepti',
-                            onTap: () {},
+                            onTap: () => context.go('/recepti'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -217,12 +217,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onTap: () => context.go('/kalkulatori'),
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _QuickButton(
+                            icon: Icons.local_fire_department_outlined,
+                            label: 'Kalorije',
+                            onTap: () => context.push('/kalorije'),
+                          ),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: _QuickButton(
                             icon: Icons.settings_outlined,
                             label: 'Postavke',
-                            onTap: () => context.push(authState.isLoggedIn ? '/postavke' : '/login'),
+                            onTap: () => context.push(authState.isLoggedIn ? '/profil' : '/login'),
                           ),
                         ),
                       ],
