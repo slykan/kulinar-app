@@ -17,6 +17,7 @@ class CalculatorsScreen extends ConsumerWidget {
       (emoji: '🌭', title: 'Kobasice za pečenje', subtitle: 'Začini prema kg mesa', route: '/kalkulatori/kobasice'),
       (emoji: '🍲', title: 'Tripice', subtitle: 'Sastojci prema gramima', route: '/kalkulatori/tripice'),
       (emoji: '🥒', title: 'Turšija', subtitle: 'Salamura prema litrama octa', route: '/kalkulatori/tursija'),
+      (emoji: '🔥', title: 'Tablica UH i kcal', subtitle: 'Tablica 162 namirnice', route: '/kalorije'),
     ];
 
     final mainContent = ListView.separated(

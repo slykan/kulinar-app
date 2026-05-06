@@ -583,9 +583,30 @@ class _Features extends StatelessWidget {
             runSpacing: 20,
             alignment: WrapAlignment.center,
             children: const [
-              _FeatureCard(icon: Icons.menu_book_outlined, title: 'Tvoj receptar', desc: 'Spremi sve recepte na jednom mjestu.'),
-              _FeatureCard(icon: Icons.calculate_outlined, title: 'Kalkulator', desc: 'Točne količine, savršeni rezultati.'),
-              _FeatureCard(icon: Icons.settings_outlined, title: 'Postavke', desc: 'Prilagodi sve po svom stilu.'),
+              _FeatureCard(
+                icon: Icons.menu_book_outlined,
+                title: 'Tvoj receptar',
+                desc: 'Spremi sve recepte na jednom mjestu.',
+                route: '/recepti',
+              ),
+              _FeatureCard(
+                icon: Icons.calculate_outlined,
+                title: 'Kalkulator',
+                desc: 'Točne količine, savršeni rezultati.',
+                route: '/kalkulatori',
+              ),
+              _FeatureCard(
+                icon: Icons.local_fire_department_outlined,
+                title: 'Tablica UH i kcal',
+                desc: 'Provjeri tablicu namirnica.',
+                route: '/kalorije',
+              ),
+              _FeatureCard(
+                icon: Icons.settings_outlined,
+                title: 'Postavke',
+                desc: 'Prilagodi sve po svom stilu.',
+                route: '/profil',
+              ),
             ],
           ),
         ],
@@ -598,12 +619,13 @@ class _FeatureCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String desc;
+  final String? route;
 
-  const _FeatureCard({required this.icon, required this.title, required this.desc});
+  const _FeatureCard({required this.icon, required this.title, required this.desc, this.route});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       width: 220,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -628,6 +650,14 @@ class _FeatureCard extends StatelessWidget {
           Text(desc, style: const TextStyle(color: Colors.white54, fontSize: 13, height: 1.5)),
         ],
       ),
+    );
+
+    if (route == null) return card;
+
+    return InkWell(
+      onTap: () => context.go(route!),
+      borderRadius: BorderRadius.circular(16),
+      child: card,
     );
   }
 }
