@@ -1,7 +1,8 @@
 {
     "name": "Kulinar.app",
     "short_name": "Kulinar",
-    "start_url": "/",
+    "start_url": "/app/",
+    "scope": "/app/",
     "display": "standalone",
     "background_color": "#181818",
     "theme_color": "#E85D04",
